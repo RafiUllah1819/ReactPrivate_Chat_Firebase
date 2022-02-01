@@ -1,8 +1,7 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, createContext, useContext } from "react";
 import {
   collection,
   query,
-  where,
   onSnapshot,
   addDoc,
   Timestamp,
@@ -14,30 +13,55 @@ import { onAuthStateChanged } from "firebase/auth";
 import { User } from "../Components/User";
 import { MessageForm } from "../Components/MessageForm";
 import { Message } from "../Components/Message";
-import { ForscrollDown } from "../Components/ForscrollDown";
+import EmojiPicker, { SKIN_TONE_MEDIUM_DARK } from "emoji-picker-react";
+
+export const contextNode = createContext(["", () => {}]);
+export const useMe = () => useContext(contextNode);
+export const ContextState = (props) => {
+  return (
+    <contextNode.Provider value={useState([])}>
+      {props.children}
+    </contextNode.Provider>
+  );
+};
 
 export const ChatHome = () => {
   const [users, setUsers] = useState([]);
   const [chat, setChat] = useState("");
   const [text, setText] = useState("");
   const [msgs, setMsgs] = useState([]);
+  const [me, setMe] = useMe();
+  const [choseEmoji, setChoseEmoji] = useState([]);
+  const [showEmoji, setShowEmoji] = useState(false);
+  const [emojies, setEmojies] = useState(null);
 
-  const user1 = auth.currentUser.uid;
-  console.log("user1", user1);
+  const { emoji } = choseEmoji;
+  console.log("emojoii", emoji);
 
+  const onEmojiClick = (event, emojiObject) => {
+    setChoseEmoji(emojiObject);
+  };
+
+  const onhandleChange = (e) => {
+    setText(e.target.value + emoji);
+  };
+
+  // console.log(choseEmoji.emoji);
   useEffect(() => {
     let unsub;
     const authUnsub = onAuthStateChanged(auth, (user) => {
       if (user) {
         const userRef = collection(db, "users");
-        const q = query(
-          userRef,
-          where("uid", "not-in", [auth.currentUser.uid])
-        );
+        const q = query(userRef);
         unsub = onSnapshot(q, (querySnapShot) => {
           let users = [];
           querySnapShot.forEach((doc) => {
-            users.push(doc.data());
+            if (doc.data().uid === user.uid) {
+              console.log("hello", doc.data());
+              setMe(doc.data());
+            } else {
+              users.push(doc.data());
+            }
           });
           setUsers(users);
         });
@@ -53,9 +77,12 @@ export const ChatHome = () => {
     setChat(user);
     console.log("selectuser", user);
 
-    const user2 = user.uid;
-    console.log("user2", user2);
-    const id = user1 > user2 ? `${user1 + user2}` : `${user2 + user1}`;
+    const receieverId = user.id;
+    console.log("receiever", receieverId);
+    const id =
+      me.id > receieverId
+        ? `${receieverId}_${me.id}`
+        : `${me.id}_${receieverId}`;
 
     const msgsRef = collection(db, "message", id, "chat");
 
@@ -71,7 +98,7 @@ export const ChatHome = () => {
     return () => unsubs();
   };
 
-  var today = new Date();
+  let today = new Date();
   today = today.toLocaleString("en-US", {
     hour: "numeric",
     hour12: true,
@@ -81,13 +108,14 @@ export const ChatHome = () => {
 
   const handleSubmit = async (e) => {
     // e.preventDefault();
-    const user2 = chat.uid;
-    const id = user1 > user2 ? `${user1 + user2}` : `${user2 + user1}`;
+    const receiverId = chat.id;
+    const id =
+      receiverId > me.id ? `${me.id}_${receiverId}` : `${receiverId}_${me.id}`;
     await addDoc(collection(db, "message", id, "chat"), {
       text,
       today,
-      from: user1,
-      to: user2,
+      from: me.id,
+      to: receiverId,
       createdAt: Timestamp.fromDate(new Date()),
     });
     setText("");
@@ -96,13 +124,18 @@ export const ChatHome = () => {
   console.log("users", users);
   return (
     <div className="home-container d-flex">
+      {
+        // <h3 style={{ position: "absolute", left: 0 }}>
+        //   choseEmoj {choseEmoji.emoji}
+        // </h3>
+      }
       <div className="home-user">
         {users?.map((user) => (
           <User key={user.uid} user={user} selectUser={selectUser} />
         ))}
       </div>
       {console.log("all mesgs", msgs)}
-      <div className="messages-container">
+      <div className="messages-container" style={{ position: "relative" }}>
         {chat ? (
           <>
             <div className="messages-user">
@@ -111,7 +144,7 @@ export const ChatHome = () => {
             <div className="messages">
               {msgs.length
                 ? msgs.map((msg, i) => (
-                    <Message key={i} msg={msg} user1={user1} />
+                    <Message key={i} msg={msg} user1={me.id} />
                   ))
                 : null}
             </div>
@@ -119,6 +152,10 @@ export const ChatHome = () => {
               handleSubmit={handleSubmit}
               text={text}
               setText={setText}
+              showEmoji={showEmoji}
+              setShowEmoji={setShowEmoji}
+              choseEmoji={emoji}
+              onhandleChange={onhandleChange}
             />
           </>
         ) : (
@@ -127,6 +164,15 @@ export const ChatHome = () => {
           </div>
         )}
       </div>
+      <div className="emoji-section">
+        {showEmoji && (
+          <EmojiPicker
+            onEmojiClick={onEmojiClick}
+            skinTone={SKIN_TONE_MEDIUM_DARK}
+          ></EmojiPicker>
+        )}
+      </div>
+      {/* {choseEmoji && <EmojiData choseEmoji={choseEmoji} />} */}
     </div>
   );
 };

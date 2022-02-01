@@ -1,10 +1,13 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { signOut, onAuthStateChanged } from "firebase/auth";
 import { updateDoc, doc } from "firebase/firestore";
 import { auth, db } from "../firebase";
+import { useMe } from "../Pages/ChatHome";
 
 export const Navbar = () => {
+  const [me] = useMe();
+  // console.log("context", me.name);/
   const navigate = useNavigate();
 
   const logout = () => {
@@ -26,7 +29,7 @@ export const Navbar = () => {
     <nav>
       <h4>
         <Link to="/home" className="nav-link">
-          Messenger
+          {me.name}
         </Link>
       </h4>
       {/* <div className="d-flex">

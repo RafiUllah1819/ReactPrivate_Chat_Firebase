@@ -32,7 +32,7 @@ export const SignIn = () => {
       await updateDoc(doc(db, "users", result.user.uid), {
         isOnline: true,
       });
-      localStorage.setItem('token' , result.user.accessToken)
+      localStorage.setItem("token", result.user.accessToken);
       navigate("/home");
       setData({
         name: "",

@@ -85,8 +85,9 @@ nav {
   height: 477px;
   border-bottom: 2px solid lightgray;
   background-color: #f8f9f9;
-  max-width: 818px;
+  max-width: 1920px;
   margin: 0 auto;
+  width: 100%;
 }
 .messages-form {
   position: absolute;
@@ -95,17 +96,26 @@ nav {
   width: 100%;
 }
 .input-field {
-  width: 82%;
+  width: 53%;
   height: 47px;
+  border: 1px solid lightgray;
+  border-radius: 40px;
+  padding-left: 15px;
+  margin-left: 3px;
+}
+
+input:focus-visible {
+  outline: unset;
 }
 .send-btn {
-  width: 102px;
+  width: 85px;
   height: 48px;
   border: 1px solid;
   background: lightgray;
   color: white;
   margin-top: -6px;
-  margin-left: -1px;
+  margin-left: 3px;
+  border-radius: 40px;
 }
 h3 {
   text-align: center;
@@ -157,7 +167,7 @@ h6 {
   /* margin: 110px 0; */
 
   overflow-y: scroll;
-  height: 405px;
+  height: 384px;
   padding: 2px;
 }
 .messages::-webkit-scrollbar {
@@ -170,4 +180,17 @@ h6 {
   background-color: lightgray; /* color of the scroll thumb */
   border-radius: 20px; /* roundness of the scroll thumb */
   /* creates padding around scroll thumb */
+}
+
+.emojies {
+  border: unset;
+  border-radius: 46%;
+  background: burlywood;
+  font-size: 12px;
+  padding: 12px 6px;
+}
+.emoji-section {
+  position: absolute;
+  right: 0;
+  bottom: 36%;
 }
