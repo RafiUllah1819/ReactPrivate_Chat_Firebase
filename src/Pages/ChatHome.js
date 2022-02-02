@@ -1,4 +1,5 @@
 import React, { useState, useEffect, createContext, useContext } from "react";
+import { ForscrollDown } from "../Components/ForscrollDown";
 import {
   collection,
   query,
@@ -7,12 +8,13 @@ import {
   Timestamp,
   orderBy,
 } from "firebase/firestore";
-import { db, auth } from "../firebase";
+import { db, auth, storage } from "../firebase";
 import { onAuthStateChanged } from "firebase/auth";
 import { User } from "../Components/User";
 import { MessageForm } from "../Components/MessageForm";
 import { Message } from "../Components/Message";
 import EmojiPicker, { SKIN_TONE_MEDIUM_DARK } from "emoji-picker-react";
+import { ref, getDownloadURL, uploadBytes } from "firebase/storage";
 
 export const contextNode = createContext(["", () => {}]);
 export const useMe = () => useContext(contextNode);
@@ -30,12 +32,12 @@ export const ChatHome = () => {
   const [text, setText] = useState("");
   const [msgs, setMsgs] = useState([]);
   const [me, setMe] = useMe();
-  const [choseEmoji, setChoseEmoji] = useState([]);
+  // const [choseEmoji, setChoseEmoji] = useState([]);
   const [showEmoji, setShowEmoji] = useState(false);
-  const [emojies, setEmojies] = useState(null);
+  const [img, setImg] = useState("");
 
-  const { emoji } = choseEmoji;
-  console.log("emojoii", JSON.stringify(emoji));
+  // const { emoji } = choseEmoji;
+  // console.log("emojoii", JSON.stringify(emoji));
 
   const onEmojiClick = (event, emojiObject) => {
     // setChoseEmoji({emojiObject});
@@ -72,7 +74,7 @@ export const ChatHome = () => {
       if (unsub) unsub();
       if (authUnsub) authUnsub();
     };
-  }, []);
+  }, [msgs]);
 
   const selectUser = (user) => {
     setChat(user);
@@ -112,15 +114,30 @@ export const ChatHome = () => {
     const receiverId = chat.id;
     const id =
       receiverId > me.id ? `${me.id}_${receiverId}` : `${receiverId}_${me.id}`;
+
+    let url;
+    if (img) {
+      const imgRef = ref(
+        storage,
+        `images/${new Date().getTime()} - ${img.name}`
+      );
+      const snap = await uploadBytes(imgRef, img);
+      const dlUrl = await getDownloadURL(ref(storage, snap.ref.fullPath));
+      url = dlUrl;
+    }
+
     await addDoc(collection(db, "message", id, "chat"), {
       text,
       today,
       from: me.id,
       to: receiverId,
       createdAt: Timestamp.fromDate(new Date()),
+      media: url || "",
     });
     setText("");
     setShowEmoji(false);
+    setImg("");
+    <ForscrollDown />;
   };
 
   console.log("users", users);
@@ -146,7 +163,10 @@ export const ChatHome = () => {
             <div className="messages">
               {msgs.length
                 ? msgs.map((msg, i) => (
-                    <Message key={i} msg={msg} user1={me.id} />
+                    <>
+                      <Message key={i} msg={msg} user1={me.id} img={img} />
+                      <ForscrollDown msg={msg} />
+                    </>
                   ))
                 : null}
             </div>
@@ -157,6 +177,7 @@ export const ChatHome = () => {
               showEmoji={showEmoji}
               setShowEmoji={setShowEmoji}
               onhandleChange={onhandleChange}
+              setImg={setImg}
             />
           </>
         ) : (
@@ -174,6 +195,7 @@ export const ChatHome = () => {
         )}
       </div>
       {/* {choseEmoji && <EmojiData choseEmoji={choseEmoji} />} */}
+      <ForscrollDown />
     </div>
   );
 };

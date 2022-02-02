@@ -1,13 +1,16 @@
-import React from "react";
+import React, { useState } from "react";
+import { Attachment } from "./Attachment";
+import emojiImg from "../assets/images/emoji.png";
 
 export const MessageForm = ({
   handleSubmit,
-  text,
-  setText,
   showEmoji,
   setShowEmoji,
   onhandleChange,
+  text,
+  setImg,
 }) => {
+  const [uploadFile, setUploadFile] = useState(false);
   const handleKeyUP = (event) => {
     if (event.key === "Enter") {
       console.log("enter button");
@@ -16,23 +19,35 @@ export const MessageForm = ({
   };
   return (
     <div className="messages-form">
-      {/* {choseEmoji} */}
+      <button className="emo" onClick={() => setShowEmoji(!showEmoji)}>
+        <img src={emojiImg} alt="" />
+      </button>
+
       <input
         type="text"
         className="input-field"
         placeholder="Enter message"
         value={text}
-        // onChange={(e) => setText(e.target.value)}
         onChange={onhandleChange}
         onKeyPress={handleKeyUP}
       />
-      <button className="send-btn" onClick={handleSubmit}>
-        Send
-      </button>
-      <button className="emojies" onClick={() => setShowEmoji(!showEmoji)}>
-        emoji
-        <i className="fa fa-meh" style={{ fontSize: 24 }}></i>
-      </button>
+      <label htmlFor="img">
+        <Attachment />
+      </label>
+      <input
+        onChange={(e) => setImg(e.target.files[0])}
+        type="file"
+        id="img"
+        accept="image/*"
+        style={{ display: "none" }}
+      />
+      {text.length > 0 ? (
+        <button className="send-btn" onClick={handleSubmit}>
+          <span>
+            <i class="fa fa-paper-plane"></i>
+          </span>
+        </button>
+      ) : null}
     </div>
   );
 };
