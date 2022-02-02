@@ -6,7 +6,6 @@ import {
   addDoc,
   Timestamp,
   orderBy,
-  doc,
 } from "firebase/firestore";
 import { db, auth } from "../firebase";
 import { onAuthStateChanged } from "firebase/auth";
@@ -36,14 +35,16 @@ export const ChatHome = () => {
   const [emojies, setEmojies] = useState(null);
 
   const { emoji } = choseEmoji;
-  console.log("emojoii", emoji);
+  console.log("emojoii", JSON.stringify(emoji));
 
   const onEmojiClick = (event, emojiObject) => {
-    setChoseEmoji(emojiObject);
+    // setChoseEmoji({emojiObject});
+    let textWithEmoji = `${text}${emojiObject.emoji}`;
+    setText(textWithEmoji);
   };
 
   const onhandleChange = (e) => {
-    setText(e.target.value + emoji);
+    setText(e.target.value);
   };
 
   // console.log(choseEmoji.emoji);
@@ -119,6 +120,7 @@ export const ChatHome = () => {
       createdAt: Timestamp.fromDate(new Date()),
     });
     setText("");
+    setShowEmoji(false);
   };
 
   console.log("users", users);
@@ -134,7 +136,7 @@ export const ChatHome = () => {
           <User key={user.uid} user={user} selectUser={selectUser} />
         ))}
       </div>
-      {console.log("all mesgs", msgs)}
+      {console.log("all msgs", msgs)}
       <div className="messages-container" style={{ position: "relative" }}>
         {chat ? (
           <>
@@ -154,7 +156,6 @@ export const ChatHome = () => {
               setText={setText}
               showEmoji={showEmoji}
               setShowEmoji={setShowEmoji}
-              choseEmoji={emoji}
               onhandleChange={onhandleChange}
             />
           </>

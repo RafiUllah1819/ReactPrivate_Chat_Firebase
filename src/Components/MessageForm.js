@@ -6,7 +6,6 @@ export const MessageForm = ({
   setText,
   showEmoji,
   setShowEmoji,
-  choseEmoji,
   onhandleChange,
 }) => {
   const handleKeyUP = (event) => {
